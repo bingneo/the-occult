@@ -174,6 +174,7 @@ export class S3StorageBackend implements StorageBackend {
         secretAccessKey: process.env.S3_SECRET_KEY || "any",
       },
       forcePathStyle: true,
+      requestChecksumCalculation: "WHEN_REQUIRED",
     });
 
     const signed = await getSignedUrl(
