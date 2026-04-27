@@ -63,6 +63,10 @@ function rebuildUrlWithPublicHost(signedUrl: string): string {
     u.protocol = pub.protocol;
     u.hostname = pub.hostname;
     u.port = pub.port;
+    const pubPath = pub.pathname.replace(/\/+$/, "");
+    if (pubPath) {
+      u.pathname = pubPath + u.pathname;
+    }
     return u.toString();
   } catch {
     return signedUrl;
