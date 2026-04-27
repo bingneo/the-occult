@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Auto-compute version tag and push it, triggering GitHub Actions Docker build.
@@ -8,7 +8,7 @@
     - yearDiff = current year - 2025
     - MMdd     = month + day
     - seq      = incremental counter for tags with same prefix (01-based)
-    Example first push of the day: v1.0422.01
+    Example first push of the day: v1.0422.01 
 #>
 
 $ErrorActionPreference = 'Stop'

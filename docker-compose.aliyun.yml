@@ -1,3 +1,18 @@
+# =============================================================================
+# SciBlock-occult Production Compose (Aliyun ACR)
+# =============================================================================
+# 从阿里云容器镜像服务拉取镜像，不做本地构建
+#
+# 启动命令:
+#   docker compose -f docker-compose.aliyun.yml --env-file .env.aliyun up -d
+#
+# 前置条件:
+#   1. PRD 服务器已安装 Docker + Docker Compose v2.20+
+#   2. 已 docker login 到阿里云镜像仓库
+#   3. 已准备 .env.aliyun 文件（不要提交到 Git）
+#   4. 备份 SQL 文件在 ./backups/ 目录下
+# =============================================================================
+
 name: sciblock-occult
 
 services:
@@ -7,6 +22,12 @@ services:
       service: api-server
     image: crpi-24eqfvp93x6tspe9.cn-shenzhen.personal.cr.aliyuncs.com/podlist/sciblock-occult-api:latest
     build: !reset null
+    restart: unless-stopped
+    ports: []                       # 生产环境不暴露 API 端口，只走 Docker 内网
+    env_file: [.env.aliyun]         # 使用生产环境变量文件
+    environment:
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT}
+      # 覆盖开发环境的 localhost:28333，使用生产域名
 
   frontend:
     extends:
@@ -14,16 +35,22 @@ services:
       service: frontend
     image: crpi-24eqfvp93x6tspe9.cn-shenzhen.personal.cr.aliyuncs.com/podlist/sciblock-occult-web:latest
     build: !reset null
+    restart: unless-stopped
+    # 前端 SPA 已在构建时打包，不需要额外的 env_file
 
   postgres:
     extends:
       file: docker-compose.yml
       service: postgres
+    restart: unless-stopped
+    ports: []                       # 生产环境不暴露数据库端口
+    env_file: [.env.aliyun]
 
   seaweedfs:
     extends:
       file: docker-compose.yml
       service: seaweedfs
+    restart: unless-stopped
 
 volumes:
   postgres-17-data:

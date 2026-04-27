@@ -35,7 +35,7 @@ services:
       - api-server
 
   postgres:
-    image: postgres:17-alpine
+    image: docker.m.daocloud.io/library/postgres:17-alpine
     container_name: sciblock-occult-pg
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -55,7 +55,7 @@ services:
       retries: 5
 
   seaweedfs:
-    image: chrislusf/seaweedfs:latest
+    image: docker.m.daocloud.io/chrislusf/seaweedfs:latest
     container_name: sciblock-occult-sfs
     entrypoint: ["/bin/sh", "/init/seaweedfs-init.sh"]
     ports:
