@@ -162,9 +162,22 @@ export class S3StorageBackend implements StorageBackend {
     const privateDir = getPrivateObjectDir().replace(/^\/+/, "");
     const objectId = randomUUID();
     const key = `${privateDir}/uploads/${objectId}`;
-    const s3 = getS3Client();
+
+    // 用 public endpoint 的 origin 做签名 endpoint，保证签名 Host 与实际请求一致
+    const pub = new URL(publicEndpoint());
+    const signingEndpoint = `${pub.protocol}//${pub.host}`;
+    const signingS3 = new S3Client({
+      endpoint: signingEndpoint,
+      region: process.env.S3_REGION || "us-east-1",
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY || "any",
+        secretAccessKey: process.env.S3_SECRET_KEY || "any",
+      },
+      forcePathStyle: true,
+    });
+
     const signed = await getSignedUrl(
-      s3,
+      signingS3,
       new PutObjectCommand({ Bucket: bucket, Key: key }),
       { expiresIn: 900 },
     );
