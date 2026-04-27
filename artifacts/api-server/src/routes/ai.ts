@@ -1,9 +1,9 @@
 import { Router } from "express";
 import OpenAI from "openai";
 
-const qwen = new OpenAI({
-  apiKey: process.env.QWEN_API_KEY ?? "",
-  baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+const aiClient = new OpenAI({
+  apiKey: process.env.DEEPSEEK_API_KEY ?? process.env.QWEN_API_KEY ?? "",
+  baseURL: "https://api.deepseek.com/v1",
 });
 
 const router = Router();
@@ -49,8 +49,8 @@ router.post("/ai/chat", async (req, res) => {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
-    const stream = await qwen.chat.completions.create({
-      model: "qwen-turbo",
+    const stream = await aiClient.chat.completions.create({
+      model: "deepseek-v4-flash",
       max_tokens: 512,
       messages: [
         { role: "system", content: systemPrompt },
@@ -121,8 +121,8 @@ ${lessonLearned ? `- 经验教训：${lessonLearned}` : ""}
 4. 结语部分要给这次失败一个有温度的总结，表达出"失败也是科研的一部分"的精神
 5. 整篇大约400-600字`;
 
-    const stream = await qwen.chat.completions.create({
-      model: "qwen-plus",
+    const stream = await aiClient.chat.completions.create({
+      model: "deepseek-v4-flash",
       max_tokens: 1200,
       messages: [{ role: "user", content: docPrompt }],
       stream: true,
@@ -181,8 +181,8 @@ ${paperList}
 - 可以夸张地说比如"这篇2019年的论文已经预见了你今天的结局"
 - 最后幽默地给出一句总结，比如"查文献是科研的第一步，也是最容易被跳过的一步"`;
 
-    const stream = await qwen.chat.completions.create({
-      model: "qwen-turbo",
+    const stream = await aiClient.chat.completions.create({
+      model: "deepseek-v4-flash",
       max_tokens: 400,
       messages: [{ role: "user", content: prompt }],
       stream: true,
@@ -217,8 +217,8 @@ router.post("/ai/failures/suggest", async (req, res) => {
   }
 
   try {
-    const completion = await qwen.chat.completions.create({
-      model: "qwen-turbo",
+    const completion = await aiClient.chat.completions.create({
+      model: "deepseek-v4-flash",
       max_tokens: 800,
       messages: [
         {
@@ -264,8 +264,8 @@ router.post("/ai/generate-title", async (req, res) => {
   }
 
   try {
-    const completion = await qwen.chat.completions.create({
-      model: "qwen-turbo",
+    const completion = await aiClient.chat.completions.create({
+      model: "deepseek-v4-flash",
       max_tokens: 400,
       messages: [
         {
@@ -298,8 +298,8 @@ router.post("/ai/generate-description", async (req, res) => {
   }
 
   try {
-    const completion = await qwen.chat.completions.create({
-      model: "qwen-turbo",
+    const completion = await aiClient.chat.completions.create({
+      model: "deepseek-v4-flash",
       max_tokens: 400,
       messages: [
         {

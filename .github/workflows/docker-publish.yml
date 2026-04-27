@@ -1,0 +1,100 @@
+name: Build and Push Docker Images to GHCR & Aliyun ACR
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  ALIYUN_REGISTRY: crpi-24eqfvp93x6tspe9.cn-shenzhen.personal.cr.aliyuncs.com
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Aliyun ACR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Extract Docker metadata for GHCR (api)
+        id: meta-api-ghcr
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/sciblock-occult-api
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=,suffix=,format=short
+
+      - name: Extract Docker metadata for Aliyun ACR (api)
+        id: meta-api-aliyun
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/sciblock-occult-api
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=,suffix=,format=short
+
+      - name: Extract Docker metadata for GHCR (web)
+        id: meta-web-ghcr
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/sciblock-occult-web
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=,suffix=,format=short
+
+      - name: Extract Docker metadata for Aliyun ACR (web)
+        id: meta-web-aliyun
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/sciblock-occult-web
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=,suffix=,format=short
+
+      - name: Build and push API server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: api-server
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ steps.meta-api-ghcr.outputs.tags }}
+            ${{ steps.meta-api-aliyun.outputs.tags }}
+          labels: ${{ steps.meta-api-ghcr.outputs.labels }}
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: frontend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ steps.meta-web-ghcr.outputs.tags }}
+            ${{ steps.meta-web-aliyun.outputs.tags }}
+          labels: ${{ steps.meta-web-ghcr.outputs.labels }}

@@ -1,0 +1,30 @@
+name: sciblock-occult
+
+services:
+  api-server:
+    extends:
+      file: docker-compose.yml
+      service: api-server
+    image: crpi-24eqfvp93x6tspe9.cn-shenzhen.personal.cr.aliyuncs.com/podlist/sciblock-occult-api:latest
+    build: !reset null
+
+  frontend:
+    extends:
+      file: docker-compose.yml
+      service: frontend
+    image: crpi-24eqfvp93x6tspe9.cn-shenzhen.personal.cr.aliyuncs.com/podlist/sciblock-occult-web:latest
+    build: !reset null
+
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+
+  seaweedfs:
+    extends:
+      file: docker-compose.yml
+      service: seaweedfs
+
+volumes:
+  postgres-17-data:
+  seaweed-data:
